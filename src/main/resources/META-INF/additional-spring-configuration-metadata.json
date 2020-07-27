@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "hydra.url",
+      "type": "java.lang.String",
+      "description": "URL for Hydra public endpoint."
+  }
+] }
