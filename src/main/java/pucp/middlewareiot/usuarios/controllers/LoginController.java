@@ -1,6 +1,7 @@
 package pucp.middlewareiot.usuarios.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -21,15 +22,16 @@ public class LoginController {
     private final AdminApi apiInstance;
     private final UserService userService;
     
-    @Value("${hydra.url}")
     private String hydraUrl;
-    
+
     @Autowired
-    public LoginController(UserService userService) {
+    public LoginController(UserService userService, @Value("${hydra.url}") String hydraUrl) {
         // Initializing Hydra SDK
+        this.hydraUrl = hydraUrl;
         ApiClient apiClient = Configuration.getDefaultApiClient();
-        apiClient.setVerifyingSsl(false);
-        apiClient.setBasePath(hydraUrl);
+        apiClient = apiClient.setVerifyingSsl(false);
+        apiClient = apiClient.setBasePath(hydraUrl);
+        log.info("Hydra URL: " + apiClient.getBasePath());
         this.apiInstance = new AdminApi(apiClient);
         
         this.userService = userService;
@@ -52,6 +54,7 @@ public class LoginController {
         }
         catch(ApiException e) {
             log.error(e.getResponseBody());
+            log.error("Error in login flow");
             return "error";
         }
     }
@@ -72,6 +75,7 @@ public class LoginController {
                             return Mono.just("redirect:" + request.getRedirectTo());
                         } catch(ApiException e) {
                             log.error(e.getResponseBody());
+                            log.error("Couldn't accept login request in loginForm");
                             return Mono.just("error");
                         }
                     }
@@ -106,6 +110,7 @@ public class LoginController {
         }
         catch(ApiException e) {
             log.error(e.getResponseBody());
+            log.error("Couldn't accept consent request in consent");
             return "error";
         }
     }
